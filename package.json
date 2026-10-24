@@ -1,0 +1,31 @@
+{
+  "name": "student-attendance",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev:admin": "pnpm --filter @attendance/admin dev",
+    "dev:lecturer": "pnpm --filter @attendance/lecturer dev",
+    "dev:student": "pnpm --filter @attendance/student dev",
+    "dev": "pnpm --parallel -r dev",
+    "build": "pnpm --filter @attendance/types build && pnpm --filter @attendance/utils build && pnpm --filter @attendance/supabase build && pnpm --filter @attendance/ui build && pnpm --filter @attendance/admin build && pnpm --filter @attendance/lecturer build && pnpm --filter @attendance/student build",
+    "build:admin": "pnpm --filter @attendance/admin build",
+    "build:lecturer": "pnpm --filter @attendance/lecturer build",
+    "build:student": "pnpm --filter @attendance/student build",
+    "typecheck": "pnpm -r typecheck",
+    "test": "vitest run",
+    "seed:users": "node scripts/seed-demo-users.mjs"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.5",
+    "@types/react": "^18.2.48",
+    "@types/react-dom": "^18.2.18",
+    "autoprefixer": "^10.4.17",
+    "postcss": "^8.4.33",
+    "tailwindcss": "^3.4.1",
+    "tailwindcss-animate": "^1.0.7",
+    "typescript": "^5.3.3",
+    "vite": "^5.0.12",
+    "vitest": "^2.1.9"
+  }
+}
