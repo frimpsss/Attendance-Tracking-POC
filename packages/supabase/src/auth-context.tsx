@@ -58,6 +58,8 @@ export function AuthProvider({
 }) {
   const [user, setUser] = React.useState<AuthenticatedUser | null>(null);
   const [loading, setLoading] = React.useState(true);
+  const userRef = React.useRef(user);
+  userRef.current = user;
   const crossAppUrls = React.useMemo(() => getCrossAppUrls(), []);
 
   const resolveDemoSession = React.useCallback(() => {
@@ -87,10 +89,20 @@ export function AuthProvider({
   }, [expectedRole]);
 
   const resolveSupabaseUser = React.useCallback(async (authUserId: string, email: string) => {
-    const [{ data: profileData }, { data: roleData }] = await Promise.all([
+    const [
+      { data: profileData, error: profileError },
+      { data: roleData, error: roleError },
+    ] = await Promise.all([
       supabase.from("profiles").select("*").eq("id", authUserId).maybeSingle(),
       supabase.from("user_roles").select("role").eq("user_id", authUserId).maybeSingle(),
     ]);
+
+    // A transient fetch failure (e.g. flaky network during a token refresh) must not
+    // strip the role from an already-resolved user and bounce them out of the app.
+    if ((profileError || roleError) && userRef.current?.id === authUserId) {
+      setLoading(false);
+      return;
+    }
 
     const profile: Profile = (profileData as Profile | null) ?? {
       id: authUserId,
@@ -187,7 +199,9 @@ export function AuthProvider({
       setUser(null);
       return;
     }
-    await supabase.auth.signOut();
+    // "local" ends only this browser's session. The default ("global") revokes every
+    // session for the account, which logs out anyone else sharing the same login.
+    await supabase.auth.signOut({ scope: "local" });
     setUser(null);
   }, [expectedRole]);
 
